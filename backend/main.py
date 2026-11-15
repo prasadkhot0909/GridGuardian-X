@@ -17,11 +17,110 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175"
-        ],
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def seed_initial_data():
+    """Automatically seeds initial mock transformer data if the database is empty."""
+    db: Session = next(get_db())
+    try:
+        count = db.query(models.Transformer).count()
+        if count == 0:
+            print("Database is empty. Seeding initial transformer fleet...")
+            
+            # Sample units matching your schema fields with mapping data added
+            mock_units = [
+                {
+                    "transformer_id": "TR-ALPHA-01",
+                    "location": "Substation North - Sector 4",
+                    "temperature": 68.5,
+                    "voltage": 11.2,
+                    "current": 420.0,
+                    "load": 45.2,
+                    "humidity": 55.0,
+                    "oil_temperature": 65.0,
+                    "age": 3,
+                    "service_zone": "Sector 4 North, Commercial Blocks 12-15",
+                    "customers_impacted": 1450
+                },
+                {
+                    "transformer_id": "TR-BETA-04",
+                    "location": "Substation Central - Sector 2",
+                    "temperature": 88.4,
+                    "voltage": 10.8,
+                    "current": 780.0,
+                    "load": 82.1,
+                    "humidity": 65.0,
+                    "oil_temperature": 84.5,
+                    "age": 7,
+                    "service_zone": "Sector 2 Central, Residential Phase 1",
+                    "customers_impacted": 3200
+                },
+                {
+                    "transformer_id": "TR-GAMMA-09",
+                    "location": "Industrial Zone - Grid 7",
+                    "temperature": 104.2,
+                    "voltage": 9.5,
+                    "current": 950.0,
+                    "load": 96.8,
+                    "humidity": 78.0,
+                    "oil_temperature": 99.1,
+                    "age": 12,
+                    "service_zone": "Grid 7 Industrial, Heavy Machinery Park",
+                    "customers_impacted": 850
+                },
+                {
+                    "transformer_id": "TR-DELTA-12",
+                    "location": "Substation West - Sector 1",
+                    "temperature": 70.1,
+                    "voltage": 11.0,
+                    "current": 490.0,
+                    "load": 52.0,
+                    "humidity": 50.0,
+                    "oil_temperature": 67.2,
+                    "age": 2,
+                    "service_zone": "Sector 1 West, Mixed Commercial",
+                    "customers_impacted": 2100
+                }
+            ]
+
+            for unit_data in mock_units:
+                # Unpack health status, failure probability, and root cause reason
+                health_status, failure_probability, failure_reason = predict_health(
+                    unit_data["temperature"],
+                    unit_data["load"],
+                    unit_data["oil_temperature"]
+                )
+
+                new_transformer = models.Transformer(
+                    transformer_id=unit_data["transformer_id"],
+                    location=unit_data["location"],
+                    temperature=unit_data["temperature"],
+                    voltage=unit_data["voltage"],
+                    current=unit_data["current"],
+                    load=unit_data["load"],
+                    humidity=unit_data["humidity"],
+                    oil_temperature=unit_data["oil_temperature"],
+                    age=unit_data["age"],
+                    health_status=health_status,
+                    failure_probability=failure_probability,
+                    failure_reason=failure_reason,
+                    service_zone=unit_data.get("service_zone", "Unknown Sector"),
+                    customers_impacted=unit_data.get("customers_impacted", 0)
+                )
+                db.add(new_transformer)
+            
+            db.commit()
+            print("Successfully seeded initial transformer fleet with AI predictions, root-cause reasons, and map data!")
+    except Exception as e:
+        print(f"Startup seeding note: {e}")
+    finally:
+        db.close()
 
 
 @app.get("/")
@@ -35,8 +134,8 @@ def create_transformer(
     db: Session = Depends(get_db)
 ):
 
-    # AI Prediction
-    health_status, failure_probability = predict_health(
+    # AI Prediction & Root Cause Analysis
+    health_status, failure_probability, failure_reason = predict_health(
         transformer.temperature,
         transformer.load,
         transformer.oil_temperature
@@ -53,7 +152,11 @@ def create_transformer(
         oil_temperature=transformer.oil_temperature,
         age=transformer.age,
         health_status=health_status,
-        failure_probability=failure_probability
+        failure_probability=failure_probability,
+        failure_reason=failure_reason,
+        # Defaulting to unknown for new POST entries unless added to schemas.py
+        service_zone="Unknown Sector", 
+        customers_impacted=0
     )
 
     db.add(new_transformer)
@@ -64,7 +167,8 @@ def create_transformer(
         "message": "Transformer added successfully",
         "id": new_transformer.id,
         "health_status": health_status,
-        "failure_probability": failure_probability
+        "failure_probability": failure_probability,
+        "failure_reason": failure_reason
     }
 
 

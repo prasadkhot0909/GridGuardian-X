@@ -5,10 +5,14 @@ import TransformerCard from './TransformerCard.jsx'
 import { TransformerCardSkeleton } from './Skeletons.jsx'
 import { BackendOfflineState, NoResultsState } from './EmptyState.jsx'
 import { normalizeStatus } from '../utils/format.js'
+import MapModal from './MapModal.jsx' // <-- IMPORTED THE MAP MODAL
 
 export default function TransformerGrid({ transformers, isLoading, backendOnline }) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  
+  // <-- ADDED STATE TO TRACK THE CLICKED TRANSFORMER
+  const [selectedTransformer, setSelectedTransformer] = useState(null)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -66,11 +70,25 @@ export default function TransformerGrid({ transformers, isLoading, backendOnline
         <div className="transformer-grid">
           <AnimatePresence mode="popLayout">
             {filtered.map((t, i) => (
-              <TransformerCard key={t.id ?? t.transformer_id ?? i} transformer={t} index={i} />
+              // <-- WRAPPED THE CARD IN A CLICKABLE DIV
+              <div 
+                key={t.id ?? t.transformer_id ?? i}
+                onClick={() => setSelectedTransformer(t)}
+                style={{ cursor: 'pointer' }}
+              >
+                <TransformerCard transformer={t} index={i} />
+              </div>
             ))}
           </AnimatePresence>
         </div>
       )}
+
+      {/* <-- ADDED THE MODAL COMPONENT AT THE BOTTOM */}
+      <MapModal 
+        isOpen={!!selectedTransformer} 
+        onClose={() => setSelectedTransformer(null)} 
+        transformer={selectedTransformer} 
+      />
     </section>
   )
 }

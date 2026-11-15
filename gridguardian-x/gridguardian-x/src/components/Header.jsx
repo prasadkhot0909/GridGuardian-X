@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Zap, RefreshCw } from 'lucide-react'
+import { X, RefreshCw } from 'lucide-react'
 import { useClock } from '../hooks/useClock.js'
 import { formatClock, formatDate } from '../utils/format.js'
 
@@ -41,7 +41,7 @@ export default function Header({ backendOnline, isRefreshing, lastUpdated }) {
             boxShadow: 'var(--shadow-glow-cyan)',
           }}
         >
-          <Zap size={24} color="var(--cyan)" strokeWidth={2.2} />
+          <X size={24} color="var(--blue)" strokeWidth={2.2} />
         </div>
         <div>
           <h1
@@ -53,7 +53,7 @@ export default function Header({ backendOnline, isRefreshing, lastUpdated }) {
             }}
           >
             <span className="gradient-text">GridGuardian</span>{' '}
-            <span style={{ color: 'var(--cyan)' }}>X</span>
+            <span style={{ color: 'var(--blue)' }}>X</span>
           </h1>
           <p className="eyebrow" style={{ marginTop: 4 }}>
             AI Transformer Intelligence Network

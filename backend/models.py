@@ -18,4 +18,10 @@ class Transformer(Base):
     age = Column(Integer)
     health_status = Column(String)
     failure_probability = Column(Float)
+    
+    # New additions for Root Cause and Map logic
+    failure_reason = Column(String, nullable=True)
+    service_zone = Column(String, nullable=True)
+    customers_impacted = Column(Integer, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)

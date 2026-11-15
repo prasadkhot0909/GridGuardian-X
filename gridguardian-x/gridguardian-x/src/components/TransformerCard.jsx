@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Thermometer, Gauge } from 'lucide-react'
+import { MapPin, Thermometer, Gauge, AlertTriangle } from 'lucide-react'
 import StatusBadge from './StatusBadge.jsx'
 import RiskBar from './RiskBar.jsx'
 import { formatTemp, formatLoad, toRiskPercent, normalizeStatus } from '../utils/format.js'
@@ -61,6 +61,30 @@ export default function TransformerCard({ transformer, index }) {
         <MetricTile icon={Thermometer} label="Temperature" value={formatTemp(transformer.temperature)} accent="var(--blue-deep)" />
         <MetricTile icon={Gauge} label="Load" value={formatLoad(transformer.load)} accent="var(--cyan)" />
       </div>
+
+      {/* Root Cause Failure Reason Section */}
+      {transformer.failure_reason && status !== 'healthy' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 8,
+            padding: '10px 12px',
+            marginBottom: 16,
+            borderRadius: 12,
+            background: status === 'critical' ? 'rgba(251, 113, 133, 0.1)' : 'rgba(251, 191, 36, 0.1)',
+            border: `1px solid ${status === 'critical' ? 'rgba(251, 113, 133, 0.3)' : 'rgba(251, 191, 36, 0.3)'}`,
+          }}
+        >
+          <AlertTriangle size={14} color={status === 'critical' ? 'var(--rose, #fb7185)' : 'var(--amber, #fbbf24)'} style={{ marginTop: 2, flexShrink: 0 }} />
+          <div style={{ fontSize: 12, lineHeight: 1.4 }}>
+            <span style={{ fontWeight: 600, color: status === 'critical' ? 'var(--rose, #fb7185)' : 'var(--amber, #fbbf24)' }}>
+              Root Cause: 
+            </span>{' '}
+            <span style={{ color: 'var(--text-secondary, #94a3b8)' }}>{transformer.failure_reason}</span>
+          </div>
+        </div>
+      )}
 
       <RiskBar percent={risk} />
     </motion.div>

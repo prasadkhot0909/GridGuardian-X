@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import { Boxes, ShieldCheck, TriangleAlert, OctagonAlert } from 'lucide-react'
 import StatCard from './StatCard.jsx'
 import { normalizeStatus } from '../utils/format.js'
 import CardSkeleton from './Skeletons.jsx'
@@ -30,10 +29,10 @@ export default function StatsGrid({ transformers, isLoading }) {
 
   return (
     <div className="stats-grid">
-      <StatCard icon={Boxes} label="Total Units" value={counts.total} accent="var(--blue)" delay={0} />
-      <StatCard icon={ShieldCheck} label="Healthy" value={counts.healthy} accent="var(--success)" delay={0.05} />
-      <StatCard icon={TriangleAlert} label="Warning" value={counts.warning} accent="var(--warning)" delay={0.1} />
-      <StatCard icon={OctagonAlert} label="Critical" value={counts.critical} accent="var(--critical)" delay={0.15} />
+      <StatCard label="Total Units" value={counts.total} bgClass="bg-units" delay={0} />
+      <StatCard label="Healthy" value={counts.healthy} bgClass="bg-healthy" delay={0.05} />
+      <StatCard label="Warning" value={counts.warning} bgClass="bg-warning" delay={0.1} />
+      <StatCard label="Critical" value={counts.critical} bgClass="bg-critical" delay={0.15} />
     </div>
   )
 }
